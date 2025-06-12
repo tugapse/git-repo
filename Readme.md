@@ -1,6 +1,6 @@
-# git-repo-py: Python Project Automation Script
+# git-repo: Python Project Automation Script
 
-git-repo-py is a versatile bash script designed to streamline the setup, management, and removal of Python projects from Git repositories on your system. It automates common tasks like cloning, virtual environment creation, dependency installation, and creating convenient executable links.
+git-repo is a versatile bash script designed to streamline the setup, management, and removal of Python projects from Git repositories on your system. It automates common tasks like cloning, virtual environment creation, dependency installation, and creating convenient executable links.
 
 ## Table of Contents
 
@@ -66,7 +66,7 @@ script_name <repository_name> <github_url>
 Example:
 
 ```bash
-git-repo-py my-web-app https://github.com/myuser/my-web-app.git
+git-repo my-web-app https://github.com/myuser/my-web-app.git
 ```
 
 ### Removal Mode
@@ -86,7 +86,7 @@ script_name -r <repository_name>
 Example:
 
 ```bash
-git-repo-py --remove my-web-app
+git-repo --remove my-web-app
 ```
 
 ### Build Python Run Script Mode (Legacy)
@@ -106,7 +106,7 @@ script_name -bpr <repository_name> <github_url>
 Example:
 
 ```bash
-git-repo-py --build-python-run my-web-app https://github.com/myuser/my-web-app.git
+git-repo --build-python-run my-web-app https://github.com/myuser/my-web-app.git
 ```
 
 ### Force Create Run Script Mode
@@ -126,7 +126,7 @@ script_name -fcr <repository_name> <github_url>
 Example:
 
 ```bash
-git-repo-py --force-create-run my-web-app https://github.com/myuser/my-web-app.git
+git-repo --force-create-run my-web-app https://github.com/myuser/my-web-app.git
 ```
 
 ### Update Mode
@@ -146,7 +146,7 @@ script_name -u <repository_name>
 Example:
 
 ```bash
-git-repo-py --update my-web-app
+git-repo --update my-web-app
 ```
 
 ### Help Mode
@@ -166,7 +166,7 @@ script_name -h
 Example:
 
 ```bash
-git-repo-py --help
+git-repo --help
 ```
 
 ## Configuration
