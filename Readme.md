@@ -1,120 +1,199 @@
+# git-repo-py: Python Project Automation Script
 
----
+git-repo-py is a versatile bash script designed to streamline the setup, management, and removal of Python projects from Git repositories on your system. It automates common tasks like cloning, virtual environment creation, dependency installation, and creating convenient executable links.
 
-### **Overview**
-This script automates Python project setup, virtual environment management, dependency installation, and project removal. It streamlines workflows for developers by handling repetitive tasks like cloning repositories, creating virtual environments, and generating executable scripts.
+## Table of Contents
 
----
+* [Features](#features)
+* [Installation](#installation)
+* [Usage](#usage)
+    * [Default Setup Mode](#default-setup-mode)
+    * [Removal Mode](#removal-mode)
+    * [Build Python Run Script Mode (Legacy)](#build-python-run-script-mode-legacy)
+    * [Force Create Run Script Mode](#force-create-run-script-mode)
+    * [Update Mode](#update-mode)
+    * [Help Mode](#help-mode)
+* [Configuration](#configuration)
+* [System Dependencies](#system-dependencies)
+* [Contributing](#contributing)
+* [License](#license)
 
-### **Key Features**
-1. **Repository Cloning**  
-   - Clones Git repositories into a user-defined base directory (default: `/usr/local/tools`).
+## Features
 
-2. **Virtual Environment Management**  
-   - Automatically creates and manages Python virtual environments using `python3 venv`.
+This script provides robust automation for Python project workflows, including:
 
-3. **Dependency Installation**  
-   - Installs dependencies from `requirements.txt` or via a `build.sh` script (if present).
+* **Automated Cloning:** Clones Git repositories into a designated `TOOLS_BASE_DIR`.
+* **Virtual Environment Management:** Automatically creates and manages Python virtual environments for each project.
+* **Dependency Installation:** Installs project dependencies via `requirements.txt` or executes a `build.sh` script if present.
+* **Intelligent Run Script Handling:**
+    * If a `run.sh` script exists in the project, it's made executable and a symbolic link is created to it in `TOOLS_BIN_DIR`.
+    * If no `run.sh` is found, a default Python execution wrapper script is generated directly in `TOOLS_BIN_DIR`, pointing to the project's `main.py`.
+* **Force Run Script Creation:** Option to force the creation of the default Python wrapper script in `TOOLS_BIN_DIR`, even if a `run.sh` exists in the cloned project's directory. This overrides any existing project-specific `run.sh` behavior.
+* **Project Removal:** Safely removes symbolic links and project directories after user confirmation.
+* **Project Update:** Cleans up `__pycache__` directories, stashes local changes (staged and unstaged), performs a git pull to update the repository from its remote, and then pops the stashed changes back.
+* **Comprehensive Help:** Built-in `--help` option for quick reference.
 
-4. **Auto-Generated `run.sh`**  
-   - Generates a shell script (`run.sh`) for Python projects, which activates the virtual environment and runs `main.py`.  
-   - Creates symlinks in the user's `bin` directory (default: `$HOME/bin` or `/usr/local/bin`) for direct execution.
+## Installation
 
-5. **Project Removal**  
-   - Safely deletes project directories and symlinks after user confirmation.
+1.  Download the script:
 
----
+    ```bash
+    curl -o /usr/local/bin/git-repo https://raw.githubusercontent.com/tugapse/git-repo/refs/heads/master/git-repo.sh
+    ```
 
-### **Requirements**
-- Ensure the following tools are installed and in your `PATH`:  
-  `git`, `python3` (with `venv`), `find`, `chmod`, `ln`, `rm`, `pwd`.
+    (Note: You might need `sudo` for `/usr/local/bin`)
 
----
+2.  Make it executable:
 
-### **Installation Steps**
-1. **Clone the Script Repository**  
-   ```bash
-   git clone https://github.com/your-organization/your-project-setup-repo.git
-   cd your-project-setup-repo
-   ```
-2. **Make the Script Executable**  
-   ```bash
-   chmod +x your_script_name.sh
-   ```
-3. **Optional: Add to PATH**  
-   Place the script in a directory within your `PATH` or create a symlink for easy access.
+    ```bash
+    chmod +x /usr/local/bin/git-repo
+    ```
 
----
+3.  Ensure `git`, `python3` (with venv module), `find`, `chmod`, `ln`, `rm`, `pwd` are installed and in your system's PATH.  The script will check for these. For Debian/Ubuntu, you might need `sudo apt install python3-venv`.
 
-### **Configuration**
-- **Customize Directories** (via environment variables):  
-  - `TOOLS_BASE_DIR`: Repository clone directory (default: `/usr/local/tools`).  
-  - `TOOLS_BIN_DIR`: Symlink directory for executables (default: `/usr/local/bin` or `$HOME/bin`).
+## Usage
 
----
+Replace `script_name` with the actual name of your script (e.g., `git-repo`).
 
-### **Usage Modes**
-#### **1. Setup Mode (Default)**  
-Clones the repo, sets up the environment, installs dependencies, and creates symlinks.  
-**Syntax**:  
+### Default Setup Mode
+
+Clones a Git repository, creates a virtual environment, installs dependencies, and sets up a runnable symbolic link.
+
 ```bash
-./your_script_name.sh <repository_name> <github_url>
-```
-**Example**:  
-```bash
-./your_script_name.sh my-project https://github.com/your-organization/my-project.git
+script_name <repository_name> <github_url>
 ```
 
-#### **2. Build Python Run Script Mode**  
-Generates a `run.sh` script for Python projects (activates venv and runs `main.py`).  
-**Syntax**:  
+Example:
+
 ```bash
-./your_script_name.sh --build-python-run <repository_name> <github_url>
-```
-**Example**:  
-```bash
-./your_script_name.sh --build-python-run my-project https://github.com/your-organization/my-project.git
+git-repo-py my-web-app https://github.com/myuser/my-web-app.git
 ```
 
-#### **3. Removal Mode**  
-Deletes project directories and symlinks after confirmation.  
-**Syntax**:  
+### Removal Mode
+
+Deletes the symbolic link in `TOOLS_BIN_DIR` and the entire project directory after user confirmation.
+
 ```bash
-./your_script_name.sh --remove <repository_name>
-```
-**Example**:  
-```bash
-./your_script_name.sh --remove my-project
+script_name --remove <repository_name>
 ```
 
----
+or
 
-### **Notes**
-- **Symlink Path**: Ensure `$HOME/bin` is in your `PATH` for symlinks to work.  
-- **Dependencies**: Projects must include `requirements.txt` or `build.sh` for dependency installation.  
-- **Safety**: Removal mode requires user confirmation to prevent accidental deletion.  
-- **Customization**: Adjust `TOOLS_BASE_DIR` and `TOOLS_BIN_DIR` via environment variables if needed.
+```bash
+script_name -r <repository_name>
+```
 
----
+Example:
 
-### **Contributing**
-- The script is open-source under the **MIT License**.  
-- Contributions for improvements or bug fixes are welcome. Check the `LICENSE` file for details.
+```bash
+git-repo-py --remove my-web-app
+```
 
----
+### Build Python Run Script Mode (Legacy)
 
-### **Example Workflow**
-1. Clone the script repo and make it executable.  
-2. Run the setup mode to initialize a project:  
-   ```bash
-   ./your_script_name.sh my-project https://github.com/your-organization/my-project.git
-   ```  
-3. Use the generated `run.sh` via the symlink (e.g., `my-project` command).  
-4. Remove the project later with:  
-   ```bash
-   ./your_script_name.sh --remove my-project
-   ```
+Performs all default setup steps. If `run.sh` is not found in the project, it will ensure a default Python execution script is generated directly in `TOOLS_BIN_DIR`. This flag mostly ensures the setup process completes; the behavior of generating a `run.sh` (if not found in the project) is now standard for all setup operations.
 
----
+```bash
+script_name --build-python-run <repository_name> <github_url>
+```
 
-This script is ideal for developers who want to standardize their Python project workflows while minimizing manual configuration.
+or
+
+```bash
+script_name -bpr <repository_name> <github_url>
+```
+
+Example:
+
+```bash
+git-repo-py --build-python-run my-web-app https://github.com/myuser/my-web-app.git
+```
+
+### Force Create Run Script Mode
+
+Behaves like the Default Setup Mode, but always generates the default Python wrapper script directly in `TOOLS_BIN_DIR`, even if a `run.sh` already exists in the cloned project's directory. This overrides any existing project-specific `run.sh` behavior.
+
+```bash
+script_name --force-create-run <repository_name> <github_url>
+```
+
+or
+
+```bash
+script_name -fcr <repository_name> <github_url>
+```
+
+Example:
+
+```bash
+git-repo-py --force-create-run my-web-app https://github.com/myuser/my-web-app.git
+```
+
+### Update Mode
+
+Cleans up `__pycache__` directories, stashes local changes (staged and unstaged), performs a git pull to update the repository from its remote, and then pops the stashed changes back.
+
+```bash
+script_name --update <repository_name>
+```
+
+or
+
+```bash
+script_name -u <repository_name>
+```
+
+Example:
+
+```bash
+git-repo-py --update my-web-app
+```
+
+### Help Mode
+
+Displays a comprehensive help message with all usage instructions and options.
+
+```bash
+script_name --help
+```
+
+or
+
+```bash
+script_name -h
+```
+
+Example:
+
+```bash
+git-repo-py --help
+```
+
+## Configuration
+
+You can customize the base directories by setting environment variables before running the script:
+
+*   `TOOLS_BASE_DIR`: The parent directory where all repositories will be cloned. Default: `/usr/local/tools` Example: `export TOOLS_BASE_DIR="/opt/my-repos"`
+*   `TOOLS_BIN_DIR`: The directory where symbolic links to the project's run scripts (or generated wrappers) will be placed. This directory should typically be in your system's PATH. Default: `/usr/local/bin` Example: `export TOOLS_BIN_DIR="/home/youruser/bin"`
+
+## System Dependencies
+
+The script requires the following system tools to be installed and available in your PATH:
+
+*   `git`
+*   `python3` (with the venv module, e.g., `python3-venv` on Debian/Ubuntu)
+*   `find`
+*   `chmod`
+*   `ln`
+*   `rm`
+*   `pwd`
+
+The script will perform a check for these dependencies and exit with an error if any are missing.
+
+## Contributing
+
+Contributions are welcome! If you have suggestions for improvements or bug fixes, please open an issue or submit a pull request.
+
+## License
+
+This project is open-sourced under the MIT License. See the `LICENSE` file for more details.
