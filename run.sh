@@ -97,7 +97,8 @@ add_tools_bin_to_path_if_needed() {
     else
         log_warn "'$bin_dir_to_check' is NOT currently in your PATH."
         echo "-----------------------------------------------------------------------"
-        echo "  To run '$REPO_NAME' from any location, add '$bin_dir_to_check' to PATH."
+        echo "  To run the project's executable (e.g., '$REPO_NAME') from any location,"
+        echo "  you need to add '$bin_dir_to_check' to your system's PATH."
         echo "  Temporarily for this session:"
         echo "    export PATH=\"\$PATH:$bin_dir_to_check\""
         echo ""
@@ -112,7 +113,6 @@ add_tools_bin_to_path_if_needed() {
 
 # Displays the script's help message.
 display_help() {
-    check_system_dependencies # Ensure tools are present even for help display.
     cat <<EOF
 Usage: $(basename "$0") [OPTIONS] <repository_name> [github_url]
 
@@ -260,11 +260,16 @@ setup_python_project() {
         log_warn "Repository '$repo_name' already exists. Skipping clone."
     else
         log_info "Cloning '$github_url' to '$project_dir'${branch_name:+ (branch '$branch_name')}"
-        local git_clone_cmd="git clone"
-        if [ -n "$branch_name" ]; then git_clone_cmd="$git_clone_cmd --branch \"$branch_name\""; fi
+        
+        # Build the git clone command as an array for safer execution
+        local git_clone_cmd=("git" "clone")
+        if [ -n "$branch_name" ]; then
+            git_clone_cmd+=("--branch" "$branch_name")
+        fi
+        git_clone_cmd+=("$github_url" "$project_dir")
 
-        # Clone using env -i to avoid passing sensitive local environment variables.
-        env -i HOME="/tmp" GIT_ASKPASS="" GIT_TERMINAL_PROMPT=0 eval "$git_clone_cmd \"$github_url\" \"$project_dir\"" \
+        # Execute git clone with a clean environment, bypassing problematic 'eval'
+        env -i HOME="/tmp" GIT_ASKPASS="" GIT_TERMINAL_PROMPT=0 "${git_clone_cmd[@]}" \
             || log_error "Failed to clone repository. Check URL/branch/network."
         log_info "Repository cloned successfully."
     fi
@@ -291,8 +296,7 @@ setup_python_project() {
             || log_error "Failed to activate venv. Activation script missing?"
         pip install -r "$requirements_file" --no-input --disable-pip-version-check \
             || log_error "Failed to install dependencies. Check '$requirements_file'."
-        deactivate # Ensure deactivate exists before calling, though it usually does after 'source'.
-        if declare -f deactivate &>/dev/null; then deactivate; fi
+        if declare -f deactivate &>/dev/null; then deactivate; fi # Deactivate if function exists.
         log_info "Dependencies installed."
     else
         log_warn "Neither 'build.sh' nor 'requirements.txt' found. Skipping dependency step."
@@ -389,7 +393,7 @@ done
 
 log_info "Starting git-repo-py (Version: $SCRIPT_VERSION)..."
 
-# Always check dependencies first.
+# Perform initial system dependency check before any mode-specific execution.
 check_system_dependencies
 
 # Execute the appropriate function based on parsed arguments.
